@@ -2,7 +2,5 @@ apple|A common fruit, keeps the doctor away
 orange|A citrus fruit with a color in its name
 banana|A yellow fruit, monkeys love it
 grape|Small fruit often used for wine
-melon|A large, juicy fruit, often green or orange inside
 peach|A fuzzy fruit, rhymes with 'teach'
-lemon|A sour, yellow citrus fruit
 forty|A fabulous age to celebrate a big birthday
