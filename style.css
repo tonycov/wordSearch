@@ -20,7 +20,7 @@ h1 {
 
 #wordsearch {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 2px;
   margin: 1em 0;
   touch-action: none;
@@ -48,26 +48,76 @@ h1 {
   color: #222;
 }
 
-#words-to-find, #words-found {
+#clues-section, #words-found {
   margin: 1em 0;
 }
 
-#words-list, #found-list {
+#clues-list, #found-list {
   padding-left: 1.2em;
-}
-
-#congrats {
-  padding: 1em;
-  background: #7be495;
-  color: #222;
-  text-align: center;
-  border-radius: 6px;
-  font-size: 1.2em;
-  margin-top: 1em;
 }
 
 .hidden {
   display: none;
+}
+
+/* Overlay styles */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 20, 28, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.overlay-content {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  padding: 2em 1em;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  text-align: center;
+  min-width: 260px;
+}
+
+.overlay-content h2 {
+  margin-bottom: 0.8em;
+  color: #2d7be0;
+  font-size: 2em;
+}
+
+.overlay-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 1em 0;
+}
+
+.overlay-content button {
+  margin: 0.5em 0.3em;
+  padding: 0.7em 1.3em;
+  background: #2d7be0;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.overlay-content button:hover {
+  background: #1767b2;
+}
+
+#fireworks-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+  display: block;
 }
 
 @media (max-width: 600px) {
@@ -77,5 +127,9 @@ h1 {
   #wordsearch .cell {
     font-size: 1em;
     padding: 7px 0;
+  }
+  .overlay-content {
+    min-width: 180px;
+    padding: 1.3em 0.2em;
   }
 }
