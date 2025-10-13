@@ -13,16 +13,16 @@ async function loadWordsAndClues() {
 
 // Generate a grid with the target words and fill the rest with random letters
 function generateGrid(words, size = 8) {
-  // Directions: horizontal, vertical, diagonal (down-right, down-left)
+  // Directions: horizontal, vertical, diagonal (down-right, down-left, all 8 directions)
   const directions = [
-    { dx: 1, dy: 0 }, // right
-    { dx: 0, dy: 1 }, // down
-    { dx: 1, dy: 1 }, // down-right
+    { dx: 1, dy: 0 },  // right
+    { dx: 0, dy: 1 },  // down
+    { dx: 1, dy: 1 },  // down-right
     { dx: -1, dy: 1 }, // down-left
     { dx: -1, dy: 0 }, // left
     { dx: 0, dy: -1 }, // up
-    { dx: -1, dy: -1 }, // up-left
-    { dx: 1, dy: -1 } // up-right
+    { dx: -1, dy: -1 },// up-left
+    { dx: 1, dy: -1 }  // up-right
   ];
   let grid = Array(size).fill(0).map(() => Array(size).fill(''));
   for (let { word } of words) {
@@ -132,9 +132,7 @@ function isLegalPath(cells) {
   let [r0, c0] = cells[0];
   let [r1, c1] = cells[1];
   let dr = r1 - r0, dc = c1 - c0;
-  // Direction must be -1, 0, or 1 for both row and col (for diagonals)
   if (Math.abs(dr) > 1 || Math.abs(dc) > 1 || (dr === 0 && dc === 0)) return false;
-  // Get the direction for the path
   let dirR = dr, dirC = dc;
   for (let i = 2; i < cells.length; i++) {
     let [prevR, prevC] = cells[i - 1];
@@ -144,10 +142,109 @@ function isLegalPath(cells) {
   return true;
 }
 
-function showCongrats(words) {
-  const congrats = document.getElementById('congrats');
-  congrats.classList.remove('hidden');
-  congrats.innerHTML = `<strong>Congratulations!</strong><br>You found all 8 words:<br>${words.map(w => `<span>${w}</span>`).join(', ')}`;
+// --- Fireworks Animation ---
+function startFireworks(canvas) {
+  // Simple fireworks animation using canvas
+  const ctx = canvas.getContext('2d');
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  let particles = [];
+  let colors = ['#f94144', '#f3722c', '#f9c74f', '#43aa8b', '#577590', '#9d4edd', '#00b4d8', '#ff61a6'];
+
+  function Firework() {
+    this.x = Math.random() * W * 0.7 + W * 0.15;
+    this.y = H * 0.7 * Math.random() + H * 0.15;
+    this.count = 40 + Math.floor(Math.random() * 20);
+    this.particles = [];
+    let color = colors[Math.floor(Math.random() * colors.length)];
+    for (let i = 0; i < this.count; i++) {
+      let angle = (Math.PI * 2) * (i / this.count);
+      let speed = 2 + Math.random() * 3;
+      this.particles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        alpha: 1,
+        color
+      });
+    }
+  }
+
+  function draw() {
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    // Add fireworks
+    if (Math.random() < 0.08) particles.push(new Firework());
+    // Draw and update
+    particles.forEach(fw => {
+      fw.particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.restore();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+        p.alpha -= 0.012;
+      });
+    });
+    // Remove faded fireworks
+    particles = particles.filter(fw =>
+      fw.particles.some(p => p.alpha > 0.04)
+    );
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// --- Overlay Logic ---
+function showCongratsOverlay(words) {
+  const overlay = document.getElementById('overlay-congrats');
+  const wordList = document.getElementById('overlay-words');
+  const canvas = document.getElementById('fireworks-canvas');
+  overlay.classList.remove('hidden');
+  wordList.innerHTML = '';
+  words.forEach(w => {
+    let li = document.createElement('li');
+    li.textContent = w;
+    wordList.appendChild(li);
+  });
+  startFireworks(canvas);
+
+  // Copy/download logic
+  document.getElementById('copy-btn').onclick = () => {
+    const text = words.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById('copy-btn').textContent = 'Copied!';
+      setTimeout(() => document.getElementById('copy-btn').textContent = 'Copy Words', 1200);
+    });
+  };
+  document.getElementById('download-btn').onclick = () => {
+    const text = words.join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'found-words.txt';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+  };
+  document.getElementById('close-btn').onclick = () => {
+    overlay.classList.add('hidden');
+  };
 }
 
 // Touch/Mouse event handler, only allow legal paths
@@ -177,19 +274,15 @@ function addGridEvents(grid, words) {
       let el = document.elementFromPoint(touch.clientX, touch.clientY);
       if (el && el.classList.contains('cell')) {
         let r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
-        // If second cell, establish direction
         if (touchPath.length === 1) {
           dirR = r - startR;
           dirC = c - startC;
-          // Must be a valid direction
           if (Math.abs(dirR) > 1 || Math.abs(dirC) > 1 || (dirR === 0 && dirC === 0)) return;
         }
-        // Only allow if cell is next in the established direction
         if (touchPath.length >= 2) {
           let [prevR, prevC] = touchPath[touchPath.length - 1];
           if ((r - prevR) !== dirR || (c - prevC) !== dirC) return;
         }
-        // Don't add duplicates
         if (!touchPath.some(([rr, cc]) => rr === r && cc === c)) {
           touchPath.push([r, c]);
           el.classList.add('selected');
@@ -202,7 +295,6 @@ function addGridEvents(grid, words) {
   wordsearch.addEventListener('touchend', function (e) {
     if (!selecting) return;
     selecting = false;
-    // Only legal path
     if (isLegalPath(touchPath)) {
       let w = checkSelection(touchPath, words, grid);
       if (w && !foundWords.includes(w)) {
@@ -210,7 +302,7 @@ function addGridEvents(grid, words) {
         highlightCells(touchPath, 'found');
         renderClues(words, foundWords);
         renderFound(foundWords);
-        if (foundWords.length === 8) showCongrats(foundWords);
+        if (foundWords.length === 8) showCongratsOverlay(foundWords);
       }
     }
     clearSelection();
@@ -263,7 +355,7 @@ function addGridEvents(grid, words) {
         highlightCells(touchPath, 'found');
         renderClues(words, foundWords);
         renderFound(foundWords);
-        if (foundWords.length === 8) showCongrats(foundWords);
+        if (foundWords.length === 8) showCongratsOverlay(foundWords);
       }
     }
     clearSelection();

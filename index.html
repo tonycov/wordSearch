@@ -18,7 +18,18 @@
       <h2>Words Found:</h2>
       <ul id="found-list"></ul>
     </div>
-    <div id="congrats" class="hidden"></div>
+  </div>
+  <!-- Overlay -->
+  <div id="overlay-congrats" class="overlay hidden">
+    <canvas id="fireworks-canvas"></canvas>
+    <div class="overlay-content">
+      <h2>Congratulations!</h2>
+      <p>You found all the words:</p>
+      <ul id="overlay-words"></ul>
+      <button id="copy-btn">Copy Words</button>
+      <button id="download-btn">Download Words</button>
+      <button id="close-btn">Close</button>
+    </div>
   </div>
   <script src="main.js"></script>
 </body>
