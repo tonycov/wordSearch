@@ -12,7 +12,7 @@ async function loadWordsAndClues() {
 }
 
 // Generate a grid with the target words and fill the rest with random letters
-function generateGrid(words, size = 8) {
+function generateGrid(words, size = words.length) {
   // Directions: horizontal, vertical, diagonal (down-right, down-left, all 8 directions)
   const directions = [
     { dx: 1, dy: 0 },  // right
