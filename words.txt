@@ -1,8 +1,6 @@
-apple|A common fruit, keeps the doctor away
-orange|A citrus fruit with a color in its name
-banana|A yellow fruit, monkeys love it
-grape|Small fruit often used for wine
-melon|A large, juicy fruit, often green or orange inside
-peach|A fuzzy fruit, rhymes with 'teach'
-lemon|A sour, yellow citrus fruit
+happy|if you're this and you know it clap your hands
+birthday|A day of celebration for someone getting more mature
+Karen|name famously (and incorrectly) associated with asking to speak to the manager
+Mummy|a Egyptian wrapped in bandages, or a parent 
+turning|the act of facing another direction
 forty|A fabulous age to celebrate a big birthday
