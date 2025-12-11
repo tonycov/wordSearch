@@ -222,7 +222,7 @@ function showCongratsOverlay(words) {
   // (gives the overlay a moment to appear so user sees celebration)
   setTimeout(() => {
     window.location.href = 'congrats.html';
-  }, 1600); // 1.6s delay - adjust as desired
+  }, 700); // 0.7s delay - adjust as desired
 }
 
 // Touch/Mouse event handler, only allow legal paths
