@@ -13,7 +13,7 @@ async function loadWordsAndClues() {
 
 // Generate a grid with the target words and fill the rest with random letters
 function generateGrid(words, size = words.length) {
-  // Directions: horizontal, vertical, diagonal (down-right, down-left, all 8 directions)
+  // Directions: horizontal, vertical, diagonal (all 8)
   const directions = [
     { dx: 1, dy: 0 },  // right
     { dx: 0, dy: 1 },  // down
@@ -26,8 +26,9 @@ function generateGrid(words, size = words.length) {
   ];
   let grid = Array(size).fill(0).map(() => Array(size).fill(''));
   for (let { word } of words) {
+    word = word.toUpperCase();
     let attempts = 0, placedWord = false;
-    while (attempts < 100 && !placedWord) {
+    while (attempts < 200 && !placedWord) {
       attempts++;
       let dir = directions[Math.floor(Math.random() * directions.length)];
       let row = Math.floor(Math.random() * size);
@@ -37,7 +38,7 @@ function generateGrid(words, size = words.length) {
       for (let i = 0; i < word.length; i++) {
         let r = row + dir.dy * i, c = col + dir.dx * i;
         if (r < 0 || r >= size || c < 0 || c >= size ||
-          (grid[r][c] && grid[r][c] !== word[i].toUpperCase())) {
+          (grid[r][c] && grid[r][c] !== word[i])) {
           fits = false; break;
         }
       }
@@ -45,9 +46,12 @@ function generateGrid(words, size = words.length) {
       // Place word
       for (let i = 0; i < word.length; i++) {
         let r = row + dir.dy * i, c = col + dir.dx * i;
-        grid[r][c] = word[i].toUpperCase();
+        grid[r][c] = word[i];
       }
       placedWord = true;
+    }
+    if (!placedWord) {
+      console.warn('Failed to place word:', word);
     }
   }
   // Fill empty
@@ -128,82 +132,50 @@ function clearSelection() {
 
 // Legal move logic: checks if cells are in a straight line in a valid direction
 function isLegalPath(cells) {
-  if (cells.length < 2) return true;
-  let [r0, c0] = cells[0];
-  let [r1, c1] = cells[1];
-  let dr = r1 - r0, dc = c1 - c0;
-  if (Math.abs(dr) > 1 || Math.abs(dc) > 1 || (dr === 0 && dc === 0)) return false;
-  let dirR = dr, dirC = dc;
-  for (let i = 2; i < cells.length; i++) {
-    let [prevR, prevC] = cells[i - 1];
-    let [currR, currC] = cells[i];
-    if ((currR - prevR) !== dirR || (currC - prevC) !== dirC) return false;
+  if (!cells || cells.length === 0) return false;
+  if (cells.length === 1) return true;
+  const [r0, c0] = cells[0];
+  const [r1, c1] = cells[1];
+  const dr = r1 - r0;
+  const dc = c1 - c0;
+  // Normalize step to -1/0/1
+  const stepR = Math.sign(dr);
+  const stepC = Math.sign(dc);
+  // Must move at most 1 in row/col for adjacent cells
+  if (Math.abs(dr) > 1 || Math.abs(dc) > 1) return false;
+  // Subsequent cells must keep same step
+  for (let i = 1; i < cells.length; i++) {
+    const [pr, pc] = cells[i - 1];
+    const [cr, cc] = cells[i];
+    if ((cr - pr) !== stepR || (cc - pc) !== stepC) return false;
   }
   return true;
 }
 
-// --- Fireworks Animation ---
+// --- Fireworks Animation (simple placeholder) ---
 function startFireworks(canvas) {
-  // Simple fireworks animation using canvas
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W = window.innerWidth;
-  let H = window.innerHeight;
-  canvas.width = W;
-  canvas.height = H;
-  let particles = [];
-  let colors = ['#f94144', '#f3722c', '#f9c74f', '#43aa8b', '#577590', '#9d4edd', '#00b4d8', '#ff61a6'];
-
-  function Firework() {
-    this.x = Math.random() * W * 0.7 + W * 0.15;
-    this.y = H * 0.7 * Math.random() + H * 0.15;
-    this.count = 40 + Math.floor(Math.random() * 20);
-    this.particles = [];
-    let color = colors[Math.floor(Math.random() * colors.length)];
-    for (let i = 0; i < this.count; i++) {
-      let angle = (Math.PI * 2) * (i / this.count);
-      let speed = 2 + Math.random() * 3;
-      this.particles.push({
-        x: this.x,
-        y: this.y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        alpha: 1,
-        color
-      });
+  canvas.width = canvas.clientWidth || 400;
+  canvas.height = canvas.clientHeight || 200;
+  // Simple blink to give some visual feedback while overlay is visible
+  let visible = true;
+  let count = 0;
+  const iv = setInterval(() => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (visible) {
+      ctx.fillStyle = 'rgba(255,200,0,0.9)';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 40 + (count % 3) * 6, 0, Math.PI * 2);
+      ctx.fill();
     }
-  }
-
-  function draw() {
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = '#222';
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-    // Add fireworks
-    if (Math.random() < 0.08) particles.push(new Firework());
-    // Draw and update
-    particles.forEach(fw => {
-      fw.particles.forEach(p => {
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-        ctx.restore();
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= 0.97;
-        p.vy *= 0.97;
-        p.alpha -= 0.012;
-      });
-    });
-    // Remove faded fireworks
-    particles = particles.filter(fw =>
-      fw.particles.some(p => p.alpha > 0.04)
-    );
-    requestAnimationFrame(draw);
-  }
-  draw();
+    visible = !visible;
+    count++;
+    if (count > 6) {
+      clearInterval(iv);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }, 300);
 }
 
 // --- Overlay Logic ---
@@ -245,6 +217,12 @@ function showCongratsOverlay(words) {
   document.getElementById('close-btn').onclick = () => {
     overlay.classList.add('hidden');
   };
+
+  // After a short pause, redirect to the static congrats page
+  // (gives the overlay a moment to appear so user sees celebration)
+  setTimeout(() => {
+    window.location.href = 'congrats.html';
+  }, 1600); // 1.6s delay - adjust as desired
 }
 
 // Touch/Mouse event handler, only allow legal paths
@@ -302,7 +280,8 @@ function addGridEvents(grid, words) {
         highlightCells(touchPath, 'found');
         renderClues(words, foundWords);
         renderFound(foundWords);
-        if (foundWords.length === 8) showCongratsOverlay(foundWords);
+        // Dynamic check: redirect if we've found all words
+        if (foundWords.length === words.length) showCongratsOverlay(foundWords);
       }
     }
     clearSelection();
@@ -355,7 +334,7 @@ function addGridEvents(grid, words) {
         highlightCells(touchPath, 'found');
         renderClues(words, foundWords);
         renderFound(foundWords);
-        if (foundWords.length === 8) showCongratsOverlay(foundWords);
+        if (foundWords.length === words.length) showCongratsOverlay(foundWords);
       }
     }
     clearSelection();

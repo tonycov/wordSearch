@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Congratulations!</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Page-specific adjustments */
+    body { background: #f7fbff; display:flex; align-items: center; justify-content:center; min-height:100vh; margin:0; }
+    .card { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); text-align:center; max-width:560px; }
+    .card h1 { margin-top:0; }
+    .gif { max-width: 100%; height: auto; margin: 1rem 0; border-radius:8px; }
+    .hint { margin-top: 1rem; color: #444; font-size: 1rem; }
+    .actions { margin-top: 1.25rem; }
+    .actions a { display:inline-block; padding:0.5rem 0.9rem; background:#7be495; color:#0b0b0b; border-radius:6px; text-decoration:none; margin:0 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Congratulations!</h1>
+    <p>You found all the words.</p>
+    <!-- Use a hosted animated gif; replace URL with one you prefer or host locally -->
+    <img class="gif" src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" alt="Celebration GIF">
+    <p class="hint">Great job — come back tomorrow for another puzzle!</p>
+    <div class="actions">
+      <a href="index.html">Play again</a>
+    </div>
+  </div>
+</body>
+</html>
